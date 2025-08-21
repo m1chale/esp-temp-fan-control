@@ -113,7 +113,5 @@ void app_main(void)
     // TODO
     // pwm richtig initialisieren
     // photo hochladen
-    // esp-idf-lib entkernen
-    // env handling
     // alle daten bereitstellen
 }
