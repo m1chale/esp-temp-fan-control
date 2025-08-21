@@ -1,5 +1,9 @@
 menu "Custom Configuration"
 
+config PWM_GPIO
+    int "PWM GPIO"
+    default 18
+
 config DHT_GPIO
     int "DHT GPIO"
     default 16

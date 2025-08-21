@@ -1,12 +1,11 @@
 #include "driver/ledc.h"
 #include "esp_err.h"
 
-#define PWM_GPIO 18              // dein gewählter PWM-GPIO
-#define PWM_FREQ_HZ 25000        // 25 kHz für Lüfter (leise)
-#define PWM_RES LEDC_TIMER_8_BIT // Auflösung (0–255)
+#define PWM_FREQ_HZ 25000        // 25 kHz
+#define PWM_RES LEDC_TIMER_8_BIT // resolution (0–255)
 #define PWM_CHANNEL LEDC_CHANNEL_0
 
-void init_pwm(void)
+void init_pwm(uint8_t pwm_gpio)
 {
     // Timer konfigurieren
     ledc_timer_config_t timer_conf = {
@@ -19,7 +18,7 @@ void init_pwm(void)
 
     // Kanal konfigurieren
     ledc_channel_config_t channel_conf = {
-        .gpio_num = PWM_GPIO,
+        .gpio_num = pwm_gpio,
         .speed_mode = LEDC_LOW_SPEED_MODE,
         .channel = PWM_CHANNEL,
         .timer_sel = LEDC_TIMER_0,

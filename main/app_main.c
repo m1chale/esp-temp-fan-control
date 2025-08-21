@@ -12,6 +12,7 @@
 #include "nvs_flash.h"
 #include "pwm.h"
 
+#define PWM_GPIO CONFIG_PWM_GPIO
 #define DHT_GPIO CONFIG_DHT_GPIO
 #define WIFI_SSID CONFIG_WIFI_SSID
 #define WIFI_PASS CONFIG_WIFI_PASS
@@ -84,7 +85,7 @@ uint8_t calc_pwm_duty(float temperature, float last_temperature)
 
 void init(void)
 {
-    init_pwm();
+    init_pwm(PWM_GPIO);
     init_nvs();
     wifi_init_sta(WIFI_SSID, WIFI_PASS);
     vTaskDelay(pdMS_TO_TICKS(5000)); // wait for 5 seconds until wifi comes up
@@ -111,7 +112,6 @@ void app_main(void)
     }
 
     // TODO
-    // pwm richtig initialisieren
     // photo hochladen
     // alle daten bereitstellen
 }
