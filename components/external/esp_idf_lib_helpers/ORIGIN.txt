@@ -1,0 +1,5 @@
+-------------------------------------
+Source: https://github.com/UncleRus/esp-idf-lib
+Path: components/esp_idf_lib_helpers
+Commit: e82d88d (2025-07-28)
+License: MIT
