@@ -112,6 +112,5 @@ void app_main(void)
     }
 
     // TODO
-    // photo hochladen
     // alle daten bereitstellen
 }
