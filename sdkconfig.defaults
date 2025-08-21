@@ -1,0 +1,6 @@
+CONFIG_DHT_GPIO=16
+CONFIG_WIFI_SSID="your-ssid"
+CONFIG_WIFI_PASS="your-password"
+CONFIG_MQTT_URI="mqtt://1.1.1.1"
+CONFIG_MQTT_USERNAME="mqtt-user"
+CONFIG_MQTT_PASSWORD="mqtt-pass"

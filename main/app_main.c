@@ -12,12 +12,12 @@
 #include "nvs_flash.h"
 #include "pwm.h"
 
-#define DHT_GPIO 16
-#define WIFI_SSID "xxx"
-#define WIFI_PASS "xxx"
-#define MQTT_URI "mqtt://1.1.1.1"
-#define MQTT_USERNAME "xxx"
-#define MQTT_PASSWORD "xxx"
+#define DHT_GPIO CONFIG_DHT_GPIO
+#define WIFI_SSID CONFIG_WIFI_SSID
+#define WIFI_PASS CONFIG_WIFI_PASS
+#define MQTT_URI CONFIG_MQTT_URI
+#define MQTT_USERNAME CONFIG_MQTT_USERNAME
+#define MQTT_PASSWORD CONFIG_MQTT_PASSWORD
 
 void init_nvs(void)
 {

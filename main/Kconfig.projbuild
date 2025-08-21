@@ -1,0 +1,27 @@
+menu "Custom Configuration"
+
+config DHT_GPIO
+    int "DHT GPIO"
+    default 16
+
+config WIFI_SSID
+    string "WiFi SSID"
+    default "your-ssid"
+
+config WIFI_PASS
+    string "WiFi Password"
+    default "your-password"
+
+config MQTT_URI
+    string "MQTT URI"
+    default "mqtt://1.1.1.1"
+
+config MQTT_USERNAME
+    string "MQTT Username"
+    default "mqtt-user"
+
+config MQTT_PASSWORD
+    string "MQTT Password"
+    default "mqtt-pass"
+
+endmenu
