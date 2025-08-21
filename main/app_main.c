@@ -11,6 +11,7 @@
 #include "wifi.h"
 #include "nvs_flash.h"
 #include "pwm.h"
+#include <math.h>
 
 #define PWM_GPIO CONFIG_PWM_GPIO
 #define DHT_GPIO CONFIG_DHT_GPIO
@@ -19,6 +20,9 @@
 #define MQTT_URI CONFIG_MQTT_URI
 #define MQTT_USERNAME CONFIG_MQTT_USERNAME
 #define MQTT_PASSWORD CONFIG_MQTT_PASSWORD
+#define MQTT_TOPIC_TEMPERATURE "sensors/serverrack/temperature"
+#define MQTT_TOPIC_FAN_SPEED "sensors/serverrack/fanspeed"
+#define REFRESH_INTERVAL_MINS 5
 
 void init_nvs(void)
 {
@@ -31,7 +35,7 @@ void init_nvs(void)
     ESP_ERROR_CHECK(ret);
 }
 
-float get_and_publish_temperature(esp_mqtt_client_handle_t mqtt_client)
+float get_temperature(void)
 {
     float temperature = 0, humidity = 0;
     esp_err_t result = dht_read_float_data(DHT_TYPE_AM2301, DHT_GPIO, &humidity, &temperature);
@@ -39,28 +43,29 @@ float get_and_publish_temperature(esp_mqtt_client_handle_t mqtt_client)
     if (result == ESP_OK)
     {
         ESP_LOGI("DHT", "Temp: %.1f°C | Humidity: %.1f%%", temperature, humidity);
-
-        // publish temperature via mqtt
-        char temp_payload[16];
-        snprintf(temp_payload, sizeof(temp_payload), "%.1f", temperature);
-        esp_mqtt_client_publish(mqtt_client, "sensors/serverrack/temperature", temp_payload, 0, 1, 0);
-
-        char fanspeed_payload[8];
-        snprintf(fanspeed_payload, sizeof(fanspeed_payload), "%d", 0); // Currently hardcoded to 0
-        esp_mqtt_client_publish(mqtt_client, "sensors/serverrack/fanspeed", fanspeed_payload, 0, 1, 0);
-
         return temperature;
     }
     else
     {
         ESP_LOGE("DHT", "Failed to read: %s", esp_err_to_name(result));
-        return 0.0f;
+        return NAN;
     }
+}
+
+void publishData(esp_mqtt_client_handle_t mqtt_client, float temperature, uint8_t fan_speed_percent)
+{
+    char temp_payload[16];
+    snprintf(temp_payload, sizeof(temp_payload), "%.1f", temperature);
+    esp_mqtt_client_publish(mqtt_client, MQTT_TOPIC_TEMPERATURE, temp_payload, 0, 1, 0);
+
+    char fanspeed_payload[8];
+    snprintf(fanspeed_payload, sizeof(fanspeed_payload), "%d", fan_speed_percent);
+    esp_mqtt_client_publish(mqtt_client, MQTT_TOPIC_FAN_SPEED, fanspeed_payload, 0, 1, 0);
 }
 
 uint8_t map_percent_to_8bit(uint8_t percent)
 {
-    return percent * 255 / 100;
+    return (uint8_t)ceil((float)percent * 255.0f / 100.0f);
 }
 
 uint8_t map_8bit_to_percent(uint8_t bit)
@@ -101,16 +106,22 @@ void app_main(void)
 
     while (true)
     {
-        temp = get_and_publish_temperature(mqtt_client);
+        temp = get_temperature();
+        if (isnan(temp))
+        {
+            ESP_LOGW("TEMP", "Skipping fan update due to failed sensor read");
+            continue;
+        }
+
         uint8_t pwm_duty = calc_pwm_duty(temp, last_temp);
+        last_temp = temp;
 
         set_pwm_duty(pwm_duty);
-        ESP_LOGI("PWM", "Duty: %u | %u%%", pwm_duty, map_8bit_to_percent(pwm_duty));
+        uint8_t pwm_duty_percent = map_8bit_to_percent(pwm_duty);
+        ESP_LOGI("PWM", "Duty: %u | %u%%", pwm_duty, pwm_duty_percent);
 
-        last_temp = temp;
-        vTaskDelay(pdMS_TO_TICKS(1000 * 60 * 1)); // wait a minute
+        publishData(mqtt_client, temp, pwm_duty_percent);
+
+        vTaskDelay(pdMS_TO_TICKS(1000 * 60 * REFRESH_INTERVAL_MINS)); // wait interval
     }
-
-    // TODO
-    // alle daten bereitstellen
 }
