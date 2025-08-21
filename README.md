@@ -11,3 +11,8 @@ use 'idf.py menuconfig' and set you config under "Custom Configuration" menu
 ## Wiring
 
 see wiring-diagram-sketch.jpeg in project root (for a non pwm fan with 2 or 3 pins)
+
+## TODOs
+
+- power optimizations (reduce clock speed, wifi)
+- build a case for esp21 and dht22 seonsor
