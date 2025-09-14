@@ -88,6 +88,28 @@ uint8_t calc_pwm_duty(float temperature, float last_temperature)
     return map_percent_to_8bit(100);
 }
 
+uint8_t calc_pwm_duty_fine(float temperature)
+{
+    // secure pwm range for fan is around 50% - 100%
+
+    const float lowerTempBound = 25.0f;
+    const float upperTempBound = 30.0f;
+    const int minSpeedPercent = 50;
+    const int maxSpeedPercent = 100;
+
+    if (temperature < lowerTempBound)
+        return map_percent_to_8bit(0);
+    if (temperature >= upperTempBound)
+        return map_percent_to_8bit(maxSpeedPercent);
+
+    // linear interpolation between two points (x0, y0) and (x1, y1):
+    // y = y0 + (x - x0) * (y1 - y0) / (x1 - x0)
+    // So the fan speed increases linearly from minSpeedPercent at lowerTempBound up to maxSpeedPercent at upperTempBound.
+    float slope = (maxSpeedPercent - minSpeedPercent) / (upperTempBound - lowerTempBound);
+    int fanSpeedPercent = (int)(minSpeedPercent + (temperature - lowerTempBound) * slope);
+    return map_percent_to_8bit(fanSpeedPercent);
+}
+
 void init(void)
 {
     init_pwm(PWM_GPIO);
@@ -113,7 +135,7 @@ void app_main(void)
             continue;
         }
 
-        uint8_t pwm_duty = calc_pwm_duty(temp, last_temp);
+        uint8_t pwm_duty = calc_pwm_duty_fine(temp);
         last_temp = temp;
 
         set_pwm_duty(pwm_duty);
